@@ -29,10 +29,25 @@ cc-backlogのインストールと設定の完全ガイドです。
    - Anthropic's Claude Codeがインストール済み
    - バージョン：最新版を推奨
    - ドキュメント：https://docs.claude.com/en/docs/claude-code
+   - **注意**: Claude Desktopアプリとは異なります
 
-4. **BacklogMCP サーバー**
+4. **BacklogMCP サーバー**（Claude Code用に設定）
    - [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
-   - DockerまたはNode.jsランタイム
+   - Claude CodeのMCP設定で構成する必要があります
+   - Claude Desktopを使用している場合：BacklogMCP設定は別で、Claude Codeでは動作しません
+
+### Claude Desktopユーザーの方へ
+
+すでにClaude DesktopでBacklogMCPを使用している場合：
+
+- **Claude Desktop ≠ Claude Code**: これらは別のアプリケーションです
+- **MCP設定は別々**: Claude DesktopのMCP設定はClaude Codeでは利用できません
+- **両方の設定が必要**: Claude Code用に別途BacklogMCPをインストール・設定する必要があります
+- **設定ファイルの場所**:
+  - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+  - Claude Code: `.claude/mcp_settings.json` またはグローバルMCP設定
+
+Claude Code用のBacklogMCP設定方法はこちら: https://github.com/nulab/backlog-mcp-server
 
 ---
 
