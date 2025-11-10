@@ -80,16 +80,30 @@ your-project/
 
 ## Verification
 
+### Prerequisites Check
+
+Before testing cc-backlog commands, ensure BacklogMCP server is running and configured:
+
+```bash
+# Check if BacklogMCP server is accessible
+# (Refer to BacklogMCP documentation for setup)
+
+# Verify environment variables are set
+echo $BACKLOG_API_KEY
+echo $BACKLOG_SPACE_KEY
+```
+
 ### Test Installation
 
 ```bash
-# Start Claude Code
+# Start Claude Code in your project directory
 cd your-project
 
-# Test 1: List projects
+# Test 1: List projects (requires BacklogMCP configuration)
 /bl:project-list
 
 # Expected: Table of accessible Backlog projects
+# If error: Check BacklogMCP server status and API credentials
 
 # Test 2: Set project
 /bl:project-set YOUR_PROJECT_KEY
@@ -118,10 +132,8 @@ cd your-project
 # Check context files were created
 ls -la .claude/context/
 
-# Should see:
+# Should see after running commands:
 # - backlog-project.json (after /bl:project-set)
-# - backlog-config.json
-# - workflow-config.json
 ```
 
 ---

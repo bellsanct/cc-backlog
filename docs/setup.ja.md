@@ -80,16 +80,30 @@ your-project/
 
 ## 検証
 
+### 前提条件の確認
+
+cc-backlogコマンドをテストする前に、BacklogMCPサーバーが起動・設定されていることを確認してください：
+
+```bash
+# BacklogMCPサーバーがアクセス可能か確認
+# （セットアップ方法はBacklogMCPのドキュメントを参照）
+
+# 環境変数が設定されていることを確認
+echo $BACKLOG_API_KEY
+echo $BACKLOG_SPACE_KEY
+```
+
 ### インストールのテスト
 
 ```bash
-# Claude Codeを起動
+# プロジェクトディレクトリでClaude Codeを起動
 cd your-project
 
-# テスト 1: プロジェクトをリスト表示
+# テスト 1: プロジェクトをリスト表示（BacklogMCP設定が必要）
 /bl:project-list
 
 # 期待される結果：アクセス可能なBacklogプロジェクトのテーブル
+# エラーの場合：BacklogMCPサーバーのステータスとAPI認証情報を確認
 
 # テスト 2: プロジェクトを設定
 /bl:project-set YOUR_PROJECT_KEY
@@ -118,10 +132,8 @@ cd your-project
 # コンテキストファイルが作成されたことを確認
 ls -la .claude/context/
 
-# 以下が表示されるはず：
+# コマンド実行後に以下が表示されるはず：
 # - backlog-project.json (/bl:project-set 実行後)
-# - backlog-config.json
-# - workflow-config.json
 ```
 
 ---
