@@ -124,7 +124,7 @@ cd your-project
 # エラーの場合：BacklogMCPサーバーのステータスとAPI認証情報を確認
 
 # テスト 2: プロジェクトを設定
-/bl:project-set YOUR_PROJECT_KEY
+/bl:project-set YOUR_PROJECT_NAME
 
 # 期待される結果：プロジェクトコンテキスト保存の確認
 

@@ -124,7 +124,7 @@ cd your-project
 # If error: Check BacklogMCP server status and API credentials
 
 # Test 2: Set project
-/bl:project-set YOUR_PROJECT_KEY
+/bl:project-set YOUR_PROJECT_NAME
 
 # Expected: Project context saved confirmation
 
