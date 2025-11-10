@@ -2,7 +2,7 @@
 
 [English](./setup.md) | 日本語
 
-cc-backlogのインストールと設定の完全ガイドです。
+cc-backlog のインストールと設定の完全ガイドです。
 
 ## 目次
 
@@ -16,38 +16,41 @@ cc-backlogのインストールと設定の完全ガイドです。
 
 ### 必須
 
-1. **Backlogアカウント**
-   - Backlog CloudまたはEnterpriseの有効なアカウント
+1. **Backlog アカウント**
+
+   - Backlog Cloud または Enterprise の有効なアカウント
    - API アクセスが有効
-   - アクセス可能なプロジェクトが最低1つ
+   - アクセス可能なプロジェクトが最低 1 つ
 
 2. **Backlog API キー**
-   - Backlogから生成：個人設定 → API → 生成
+
+   - Backlog から生成：個人設定 → API → 生成
    - 安全に保管し、バージョン管理にコミットしないこと
 
 3. **Claude Code CLI**
-   - Anthropic's Claude Codeがインストール済み
+
+   - Anthropic's Claude Code がインストール済み
    - バージョン：最新版を推奨
    - ドキュメント：https://docs.claude.com/en/docs/claude-code
-   - **注意**: Claude Desktopアプリとは異なります
+   - **注意**: Claude Desktop アプリとは異なります
 
-4. **BacklogMCP サーバー**（Claude Code用に設定）
+4. **BacklogMCP サーバー**（Claude Code 用に設定）
    - [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
-   - Claude CodeのMCP設定で構成する必要があります
-   - Claude Desktopを使用している場合：BacklogMCP設定は別で、Claude Codeでは動作しません
+   - Claude Code の MCP 設定で構成する必要があります
+   - Claude Desktop を使用している場合：BacklogMCP 設定は別で、Claude Code では動作しません
 
-### Claude Desktopユーザーの方へ
+### Claude Desktop ユーザーの方へ
 
-すでにClaude DesktopでBacklogMCPを使用している場合：
+すでに Claude Desktop で BacklogMCP を使用している場合：
 
 - **Claude Desktop ≠ Claude Code**: これらは別のアプリケーションです
-- **MCP設定は別々**: Claude DesktopのMCP設定はClaude Codeでは利用できません
-- **両方の設定が必要**: Claude Code用に別途BacklogMCPをインストール・設定する必要があります
+- **MCP 設定は別々**: Claude Desktop の MCP 設定は Claude Code では利用できません
+- **両方の設定が必要**: Claude Code 用に別途 BacklogMCP をインストール・設定する必要があります
 - **設定ファイルの場所**:
   - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
-  - Claude Code: `.claude/mcp_settings.json` またはグローバルMCP設定
+  - Claude Code: `.claude.json`
 
-Claude Code用のBacklogMCP設定方法はこちら: https://github.com/nulab/backlog-mcp-server
+Claude Code 用の BacklogMCP 設定方法はこちら: https://github.com/nulab/backlog-mcp-server
 
 ---
 
@@ -97,7 +100,7 @@ your-project/
 
 ### 前提条件の確認
 
-cc-backlogコマンドをテストする前に、BacklogMCPサーバーが起動・設定されていることを確認してください：
+cc-backlog コマンドをテストする前に、BacklogMCP サーバーが起動・設定されていることを確認してください：
 
 ```bash
 # BacklogMCPサーバーがアクセス可能か確認
@@ -155,11 +158,12 @@ ls -la .claude/context/
 
 ## トラブルシューティング
 
-### 問題：「BacklogMCPサーバーが利用できません」
+### 問題：「BacklogMCP サーバーが利用できません」
 
-**原因**：BacklogMCPサーバーが起動していないか、アクセスできない
+**原因**：BacklogMCP サーバーが起動していないか、アクセスできない
 
 **解決方法**：
+
 ```bash
 # サーバーが起動しているか確認
 docker ps | grep backlog-mcp
@@ -174,13 +178,14 @@ npx @nulab/backlog-mcp-server
 
 ### 問題：「プロジェクトが見つかりません」
 
-**原因**：APIキーにプロジェクトアクセス権限がない
+**原因**：API キーにプロジェクトアクセス権限がない
 
 **解決方法**：
-1. APIキーが正しいことを確認
-2. Backlogプロジェクトの権限を確認
-3. 最低1つのプロジェクトのメンバーであることを確認
-4. APIアクセスをテスト：
+
+1. API キーが正しいことを確認
+2. Backlog プロジェクトの権限を確認
+3. 最低 1 つのプロジェクトのメンバーであることを確認
+4. API アクセスをテスト：
    ```bash
    curl -H "Authorization: Bearer $BACKLOG_API_KEY" \
         https://your-space.backlog.com/api/v2/projects
@@ -188,22 +193,24 @@ npx @nulab/backlog-mcp-server
 
 ### 問題：「認証に失敗しました」
 
-**原因**：無効または期限切れのAPIキー
+**原因**：無効または期限切れの API キー
 
 **解決方法**：
+
 1. `BACKLOG_API_KEY`環境変数を確認：
    ```bash
    echo $BACKLOG_API_KEY
    ```
-2. Backlog設定でAPIキーを再生成
+2. Backlog 設定で API キーを再生成
 3. 環境変数を更新
-4. BacklogMCPサーバーを再起動
+4. BacklogMCP サーバーを再起動
 
 ### 問題：「プロジェクトコンテキストファイルが破損しています」
 
-**原因**：コンテキストファイル内の無効なJSON
+**原因**：コンテキストファイル内の無効な JSON
 
 **解決方法**：
+
 ```bash
 # JSONを検証
 cat .claude/context/backlog-project.json | jq .
@@ -218,6 +225,7 @@ rm .claude/context/backlog-project.json
 **原因**：`.claude/commands/bl/`が正しい場所にない
 
 **解決方法**：
+
 ```bash
 # コマンドファイルが存在することを確認
 ls .claude/commands/bl/

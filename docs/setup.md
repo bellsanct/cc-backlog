@@ -17,15 +17,18 @@ Complete setup guide for installing and configuring cc-backlog.
 ### Required
 
 1. **Backlog Account**
+
    - Active Backlog Cloud or Enterprise account
    - API access enabled
    - At least one accessible project
 
 2. **Backlog API Key**
+
    - Generate from Backlog: Personal Settings → API → Generate
    - Keep this secure and never commit to version control
 
 3. **Claude Code CLI**
+
    - Anthropic's Claude Code installed
    - Version: Latest recommended
    - Documentation: https://docs.claude.com/en/docs/claude-code
@@ -45,7 +48,7 @@ If you're already using BacklogMCP with Claude Desktop:
 - **You need both**: Install and configure BacklogMCP separately for Claude Code
 - **Configuration location**:
   - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
-  - Claude Code: `.claude/mcp_settings.json` or global MCP settings
+  - Claude Code: `.claude.json`
 
 See BacklogMCP documentation for Claude Code MCP configuration: https://github.com/nulab/backlog-mcp-server
 
@@ -160,6 +163,7 @@ ls -la .claude/context/
 **Cause**: BacklogMCP server not running or not accessible
 
 **Solution**:
+
 ```bash
 # Check if server is running
 docker ps | grep backlog-mcp
@@ -177,6 +181,7 @@ npx @nulab/backlog-mcp-server
 **Cause**: API key lacks project access permissions
 
 **Solution**:
+
 1. Verify API key is correct
 2. Check Backlog project permissions
 3. Ensure you're a member of at least one project
@@ -191,6 +196,7 @@ npx @nulab/backlog-mcp-server
 **Cause**: Invalid or expired API key
 
 **Solution**:
+
 1. Verify `BACKLOG_API_KEY` environment variable:
    ```bash
    echo $BACKLOG_API_KEY
@@ -204,6 +210,7 @@ npx @nulab/backlog-mcp-server
 **Cause**: Invalid JSON in context files
 
 **Solution**:
+
 ```bash
 # Validate JSON
 cat .claude/context/backlog-project.json | jq .
@@ -218,6 +225,7 @@ rm .claude/context/backlog-project.json
 **Cause**: `.claude/commands/bl/` not in correct location
 
 **Solution**:
+
 ```bash
 # Verify command files exist
 ls .claude/commands/bl/
