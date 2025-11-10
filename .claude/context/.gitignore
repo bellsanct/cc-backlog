@@ -1,0 +1,5 @@
+# Ignore all context files except examples
+*
+!.gitignore
+!*.example.json
+!README.md

@@ -1,0 +1,120 @@
+# cc-backlog .gitignore
+
+# Runtime context files (auto-generated, should not be committed)
+.claude/context/backlog-project.json
+.claude/context/current-issue.json
+.claude/context/issue-cache.json
+.claude/context/session-history.json
+
+# User-specific configuration (contains sensitive data)
+.claude/context/backlog-config.json
+.claude/context/workflow-config.json
+
+# Keep example files
+!.claude/context/backlog-config.example.json
+!.claude/context/workflow-config.example.json
+
+# Backlog API credentials
+*.key
+*.pem
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+backlog-mcp.log
+
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+.cache/
+tmp/
+temp/
+
+# Node modules (if using BacklogMCP locally)
+node_modules/
+npm-debug.log
+yarn.lock
+package-lock.json
+
+# Python (if using Python scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# Compiled output
+dist/
+build/
+*.o
+*.a
+*.exe
+
+# Coverage and test results
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+htmlcov/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Private notes and drafts
+NOTES.md
+TODO.md
+DRAFT*.md
+private/
+scratch/
+
+# Large data files
+*.csv
+*.json
+!package.json
+!tsconfig.json
+!*config*.json
+!*.example.json
+
+# Exclude large exports
+exports/
+backups/
+archives/
+
+# Security
+secrets/
+credentials/
+*.secret

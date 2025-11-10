@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "priorityAlgorithm": {
+    "weights": {
+      "priority": 10,
+      "dueDate": 5,
+      "blockedDependencies": 3,
+      "estimatedHours": -0.1,
+      "ageInDays": 0.5
+    },
+    "customRules": [
+      {
+        "name": "Critical bugs first",
+        "condition": "issueType == 'Bug' && priority == 'High'",
+        "scoreModifier": 50
+      },
+      {
+        "name": "Milestone near deadline",
+        "condition": "milestone.dueDate < 7 days",
+        "scoreModifier": 20
+      }
+    ]
+  },
+  "statusTransitions": {
+    "Open": ["In Progress", "Closed"],
+    "In Progress": ["Resolved", "Open", "Closed"],
+    "Resolved": ["Closed", "In Progress"],
+    "Closed": ["Open"]
+  },
+  "automation": {
+    "autoCommentOnStart": true,
+    "autoCommentOnClose": true,
+    "autoAssignOnStart": true,
+    "notifyAssigneeOnUpdate": true
+  }
+}
