@@ -20,17 +20,29 @@ Bring powerful project management workflows to [Backlog](https://backlog.com/) d
 ### Prerequisites
 
 1. **Backlog Account** with API access
-2. **BacklogMCP Server** - [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
-3. **Claude Code CLI** - [Anthropic's Claude Code](https://docs.claude.com/en/docs/claude-code)
+2. **Backlog API Key** - Generate from Personal Settings → API
+3. **Node.js** - Version 14 or higher
+4. **Claude Code CLI** - [Anthropic's Claude Code](https://docs.claude.com/en/docs/claude-code)
 
 ### Installation
 
-Clone this repository into your project:
+1. Clone this repository into your project:
 
 ```bash
 cd your-project
 git clone https://github.com/bellsanct/cc-backlog .claude-backlog
 cp -r .claude-backlog/.claude .
+```
+
+2. Configure environment variables:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env with your credentials
+BACKLOG_SPACE_KEY=your-space-key
+BACKLOG_API_KEY=your-api-key-here
 ```
 
 For detailed setup instructions, see the [Setup Guide](./docs/setup.md).
@@ -197,7 +209,13 @@ cc-backlog/
 │   │   ├── workflow-config.json
 │   │   └── ...
 │   └── templates/            # Issue templates
+├── lib/                      # Core library (NEW)
+│   ├── backlog-api.js        # Direct Backlog API client
+│   ├── utils.js              # Utility functions
+│   └── cli-runner.js         # Command execution engine
 ├── docs/                     # Documentation
+├── .env.example              # Environment configuration template
+├── MIGRATION_GUIDE.md        # Migration guide from MCP
 ├── SPECIFICATION.md          # Complete specification
 └── README.md                 # This file
 ```
@@ -206,10 +224,22 @@ cc-backlog/
 
 MIT License - see [LICENSE](./LICENSE) for details.
 
+## Architecture
+
+cc-backlog now uses **direct API calls** to Backlog, eliminating the need for MCP server setup:
+
+- ✅ **No MCP dependency** - Simple environment variable configuration
+- ✅ **Better reliability** - Direct communication with Backlog API
+- ✅ **Easier setup** - Just API keys, no server configuration
+- ✅ **Faster performance** - No MCP server overhead
+
+Existing users: See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for upgrade instructions.
+
 ## Acknowledgments
 
-- Built on [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
+- Inspired by [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
 - Powered by [Claude Code](https://docs.claude.com/en/docs/claude-code)
+- Built with [Backlog API v2](https://developer.nulab.com/docs/backlog/)
 
 ## Support
 
