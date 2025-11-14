@@ -2,7 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "spaceKey": "my-space",
   "apiEndpoint": "https://my-space.backlog.com/api/v2",
-  "apiKeyEnvVar": "BACKLOG_API_KEY",
   "defaultProject": null,
   "preferences": {
     "defaultIssueType": "Task",
@@ -10,11 +9,12 @@
     "autoAssignSelf": true,
     "notifyOnCreate": true,
     "cacheTimeout": 300,
-    "batchSize": 10
+    "batchSize": 10,
+    "rateLimitDelay": 100
   },
-  "mcpServer": {
-    "enabled": true,
-    "toolPrefix": "",
-    "maxTokens": 50000
+  "api": {
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
   }
 }
