@@ -17,8 +17,8 @@ Synchronize local context and cache with current Backlog project state.
 ## Behavior
 
 1. **Check Cache Age**: Determine if sync is needed based on last update time
-2. **Fetch Project Data**: Get current project metadata from Backlog
-3. **Update Issue Cache**: Refresh issue data from Backlog API
+2. **Fetch Project Data**: Get current project metadata via GET `/api/v2/projects/:projectIdOrKey`
+3. **Update Issue Cache**: Refresh issue data via GET `/api/v2/issues`
 4. **Update Context Files**: Write updated data to `.claude/context/` files
 5. **Report Changes**: Display sync summary with change counts
 
@@ -252,7 +252,7 @@ Edit `.claude/context/backlog-config.json`:
    Reason: Connection timeout
 
 ⚠️ Using stale cache (last sync: 2 hours ago)
-💡 Check BacklogMCP connection and try again
+💡 Check Backlog API credentials and network connection
 ```
 
 **Partial Sync Failure:**
@@ -278,10 +278,10 @@ Edit `.claude/context/backlog-config.json`:
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_project` for project metadata
-- Uses `get_issue_list` for issue data
-- Uses `get_versions` for milestone data
+**Backlog API Integration:**
+- Uses GET `/api/v2/projects/:projectIdOrKey` for project metadata
+- Uses GET `/api/v2/issues` for issue data
+- Uses GET `/api/v2/projects/:projectIdOrKey/versions` for milestone data
 - Batch API calls for efficiency
 
 **Performance Optimization:**

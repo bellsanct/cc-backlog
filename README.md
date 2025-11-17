@@ -190,9 +190,9 @@ For detailed setup instructions, see the [Setup Guide](./docs/setup.md).
 
 ## Documentation
 
-- [Complete Specification](./SPECIFICATION.md) - Detailed command reference and data structures
 - [Setup Guide](./docs/setup.md) - Installation and configuration
 - [Workflow Guide](./docs/workflows.md) - Common PM workflows
+- Command reference available in `.claude/commands/bl/` directory
 
 ## Project Structure
 
@@ -216,7 +216,6 @@ cc-backlog/
 ├── docs/                     # Documentation
 ├── .env.example              # Environment configuration template
 ├── MIGRATION_GUIDE.md        # Migration guide from MCP
-├── SPECIFICATION.md          # Complete specification
 └── README.md                 # This file
 ```
 

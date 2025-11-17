@@ -24,39 +24,49 @@ Display comprehensive project status dashboard with metrics and insights.
 
 ## Implementation
 
-```python
-project = load_project_context()
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv, loadProjectContext } = require('../../../lib/utils');
 
-# Build filter
-filters = {
-    'projectId[]': [project['projectId']]
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
+
+const project = loadProjectContext();
+
+// Build filter
+const filters = {
+  projectId: [project.projectId]
+};
+
+const milestoneFilter = getArg('--milestone');
+if (milestoneFilter) {
+  const milestoneId = await resolveVersion(milestoneFilter, project);
+  filters.milestoneId = [milestoneId];
 }
 
-milestone_filter = get_arg('--milestone')
-if milestone_filter:
-    milestone_id = resolve_version(milestone_filter, project)
-    filters['milestoneId[]'] = [milestone_id]
+// Fetch all issues
+const allIssues = await backlog.getIssues(filters);
 
-# Fetch all issues
-all_issues = call_mcp('backlog_get_issues', **filters)
+// Aggregate statistics
+const stats = {
+  total: allIssues.length,
+  byStatus: aggregateBy(allIssues, 'status.name'),
+  byType: aggregateBy(allIssues, 'issueType.name'),
+  byPriority: aggregateBy(allIssues, 'priority.name'),
+  blockers: filterBlocked(allIssues),
+  overdue: filterOverdue(allIssues),
+  recentActivity: getRecentActivity(allIssues, 7)
+};
 
-# Aggregate statistics
-stats = {
-    'total': len(all_issues),
-    'byStatus': aggregate_by(all_issues, 'status.name'),
-    'byType': aggregate_by(all_issues, 'issueType.name'),
-    'byPriority': aggregate_by(all_issues, 'priority.name'),
-    'blockers': filter_blocked(all_issues),
-    'overdue': filter_overdue(all_issues),
-    'recentActivity': get_recent_activity(all_issues, days=7)
-}
+// Calculate completion
+const closedCount = (stats.byStatus['Closed'] || 0) + (stats.byStatus['Resolved'] || 0);
+const completionPct = stats.total > 0 ? (closedCount / stats.total * 100) : 0;
 
-# Calculate completion
-closed_count = stats['byStatus'].get('Closed', 0) + stats['byStatus'].get('Resolved', 0)
-completion_pct = (closed_count / stats['total'] * 100) if stats['total'] > 0 else 0
-
-# Display dashboard
-display_status_dashboard(stats, completion_pct, project, milestone_filter)
+// Display dashboard
+displayStatusDashboard(stats, completionPct, project, milestoneFilter);
 ```
 
 ## Output Format

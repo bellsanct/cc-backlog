@@ -17,62 +17,80 @@ Mark an issue as closed/resolved.
 ## Behavior
 
 1. Fetch issue to verify it exists
-2. Update status to "Closed" or "Resolved"
-3. Set resolution if specified
-4. Add comment if specified
-5. Remove from `.claude/context/current-issue.json` if it's the current issue
-6. Update cache
+2. Call Backlog API GET `/api/v2/issues/:issueIdOrKey`
+3. Update status to "Closed" or "Resolved" via PATCH `/api/v2/issues/:issueIdOrKey`
+4. Set resolution if specified
+5. Add comment if specified via POST `/api/v2/issues/:issueIdOrKey/comments`
+6. Remove from `.claude/context/current-issue.json` if it's the current issue
+7. Update cache
 
 ## Implementation
 
-```python
-issue_key = args[0]
-resolution = get_arg('--resolution')
-comment_text = get_arg('--comment')
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv, loadProjectContext } = require('../../../lib/utils');
 
-project = load_project_context()
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
 
-# Fetch issue
-issue = call_mcp('backlog_get_issue', issueIdOrKey=issue_key)
+const issueKey = args[0];
+const resolution = getArg('--resolution');
+const commentText = getArg('--comment');
 
-# Find Closed/Resolved status
-closed_status = find_status_by_name("Closed", project['metadata']['statuses'])
-if not closed_status:
-    closed_status = find_status_by_name("Resolved", project['metadata']['statuses'])
+const project = loadProjectContext();
 
-if not closed_status:
-    error("No 'Closed' or 'Resolved' status found in project")
-    return
+// Fetch issue
+const issue = await backlog.getIssue(issueKey);
 
-# Update issue
-updated_issue = call_mcp('backlog_update_issue',
-                         issueIdOrKey=issue_key,
-                         statusId=closed_status['id'])
+// Find Closed/Resolved status
+let closedStatus = null;
+for (const status of project.metadata.statuses) {
+  if (status.name === 'Closed' || status.name === 'Resolved') {
+    closedStatus = status;
+    break;
+  }
+}
 
-# Add comment
-if comment_text:
-    call_mcp('backlog_add_comment',
-             issueIdOrKey=issue_key,
-             content=comment_text)
+if (!closedStatus) {
+  console.error('❌ No "Closed" or "Resolved" status found in project');
+  return;
+}
 
-# Display
-print(f"""
-✅ Closed: {issue_key} - {issue['summary']}
-📊 Status: {issue['status']['name']} → {closed_status['name']}
-""")
+// Update issue
+const updatedIssue = await backlog.updateIssue(issueKey, {
+  statusId: closedStatus.id
+});
 
-if resolution:
-    print(f"🔧 Resolution: {resolution}")
-if comment_text:
-    print(f"💬 Comment: \"{comment_text}\"")
+// Add comment if specified
+if (commentText) {
+  await backlog.addComment(issueKey, {
+    content: commentText
+  });
+}
 
-print(f"⏰ Closed at: {now_formatted()}")
+// Display
+console.log(`
+✅ Closed: ${issueKey} - ${issue.summary}
+📊 Status: ${issue.status.name} → ${closedStatus.name}
+`);
 
-# Remove from current issue if it matches
-remove_current_issue_if_match(issue_key)
+if (resolution) {
+  console.log(`🔧 Resolution: ${resolution}`);
+}
+if (commentText) {
+  console.log(`💬 Comment: "${commentText}"`);
+}
 
-# Update cache
-update_issue_cache(updated_issue)
+console.log(`⏰ Closed at: ${new Date().toISOString()}`);
+
+// Remove from current issue if it matches
+removeCurrentIssueIfMatch(issueKey);
+
+// Update cache
+updateIssueCache(updatedIssue);
 ```
 
 ## Example Usage

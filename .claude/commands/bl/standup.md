@@ -226,9 +226,9 @@ Generate daily standup reports showing completed, in-progress, and blocked issue
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_issue_list` with date filters
-- Fetches issue comments for progress detection
+**Backlog API Integration:**
+- Uses GET `/api/v2/issues` with date filters
+- Fetches issue comments via GET `/api/v2/issues/:issueIdOrKey/comments`
 - Queries user activity history
 
 **Progress Detection:**

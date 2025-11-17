@@ -22,7 +22,7 @@ Create new milestones (versions) in Backlog for release planning and sprint orga
 ## Behavior
 
 1. **Validate Input**: Check milestone name uniqueness and date formats
-2. **Create Milestone**: Call BacklogMCP `add_version` with milestone data
+2. **Create Milestone**: Call Backlog API POST `/api/v2/projects/:projectIdOrKey/versions`
 3. **Display Details**: Show created milestone information with ID
 4. **Update Context**: Cache milestone for quick reference in issue creation
 
@@ -193,8 +193,8 @@ Dates must be in **ISO 8601** format: `YYYY-MM-DD`
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `add_version` tool to create milestones
+**Backlog API Integration:**
+- Uses POST `/api/v2/projects/:projectIdOrKey/versions` to create milestones
 - Requires project ID from `backlog-project.json`
 - Returns milestone ID for subsequent operations
 

@@ -23,7 +23,7 @@ Export Backlog project issues and metadata to various file formats for reporting
 
 ## Behavior
 
-1. **Fetch Issues**: Retrieve issues via BacklogMCP based on filters
+1. **Fetch Issues**: Retrieve issues via GET `/api/v2/issues` based on filters
 2. **Format Data**: Transform to requested format
 3. **Write Output**: Save to file or display to stdout
 4. **Report Summary**: Display export statistics
@@ -372,9 +372,9 @@ Continue? (y/n): y
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_issue_list` to fetch all issues
-- Fetches comments via `get_issue_comments` if requested
+**Backlog API Integration:**
+- Uses GET `/api/v2/issues` to fetch all issues
+- Fetches comments via GET `/api/v2/issues/:issueIdOrKey/comments` if requested
 - Batch processing for large datasets
 
 **Performance:**

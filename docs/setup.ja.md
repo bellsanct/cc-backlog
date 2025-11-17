@@ -34,23 +34,18 @@ cc-backlog のインストールと設定の完全ガイドです。
    - ドキュメント：https://docs.claude.com/en/docs/claude-code
    - **注意**: Claude Desktop アプリとは異なります
 
-4. **BacklogMCP サーバー**（Claude Code 用に設定）
-   - [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
-   - Claude Code の MCP 設定で構成する必要があります
-   - Claude Desktop を使用している場合：BacklogMCP 設定は別で、Claude Code では動作しません
+4. **Node.js**
 
-### Claude Desktop ユーザーの方へ
+   - バージョン：14以上
+   - Backlog API クライアントの実行に必要
 
-すでに Claude Desktop で BacklogMCP を使用している場合：
+### MCPサーバー不要
 
-- **Claude Desktop ≠ Claude Code**: これらは別のアプリケーションです
-- **MCP 設定は別々**: Claude Desktop の MCP 設定は Claude Code では利用できません
-- **両方の設定が必要**: Claude Code 用に別途 BacklogMCP をインストール・設定する必要があります
-- **設定ファイルの場所**:
-  - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
-  - Claude Code: `.claude.json`
+cc-backlog は **Backlog API への直接呼び出し** を使用しており、MCP サーバーは不要です：
 
-Claude Code 用の BacklogMCP 設定方法はこちら: https://github.com/nulab/backlog-mcp-server
+- ✅ **セットアップが簡単**: API キーだけで、サーバー設定不要
+- ✅ **信頼性向上**: Backlog API との直接通信
+- ✅ **パフォーマンス向上**: MCP サーバーのオーバーヘッドなし
 
 ---
 
@@ -98,17 +93,25 @@ your-project/
 
 ## 検証
 
-### 前提条件の確認
+### 環境設定
 
-cc-backlog コマンドをテストする前に、BacklogMCP サーバーが起動・設定されていることを確認してください：
+cc-backlog コマンドをテストする前に、環境変数が設定されていることを確認してください：
 
 ```bash
-# BacklogMCPサーバーがアクセス可能か確認
-# （セットアップ方法はBacklogMCPのドキュメントを参照）
-
 # 環境変数が設定されていることを確認
 echo $BACKLOG_API_KEY
 echo $BACKLOG_SPACE_KEY
+```
+
+未設定の場合、プロジェクトルートに `.env` ファイルを作成してください：
+
+```bash
+# 環境変数サンプルファイルをコピー
+cp .env.example .env
+
+# 認証情報を編集
+# BACKLOG_SPACE_KEY=your-space
+# BACKLOG_API_KEY=your-api-key
 ```
 
 ### インストールのテスト
@@ -117,11 +120,11 @@ echo $BACKLOG_SPACE_KEY
 # プロジェクトディレクトリでClaude Codeを起動
 cd your-project
 
-# テスト 1: プロジェクトをリスト表示（BacklogMCP設定が必要）
+# テスト 1: プロジェクトをリスト表示
 /bl:project-list
 
 # 期待される結果：アクセス可能なBacklogプロジェクトのテーブル
-# エラーの場合：BacklogMCPサーバーのステータスとAPI認証情報を確認
+# エラーの場合：API認証情報とBacklog APIアクセスを確認
 
 # テスト 2: プロジェクトを設定
 /bl:project-set YOUR_PROJECT_NAME
@@ -158,24 +161,6 @@ ls -la .claude/context/
 
 ## トラブルシューティング
 
-### 問題：「BacklogMCP サーバーが利用できません」
-
-**原因**：BacklogMCP サーバーが起動していないか、アクセスできない
-
-**解決方法**：
-
-```bash
-# サーバーが起動しているか確認
-docker ps | grep backlog-mcp
-# または
-curl http://localhost:3000/health
-
-# サーバーを再起動
-docker restart backlog-mcp
-# または
-npx @nulab/backlog-mcp-server
-```
-
 ### 問題：「プロジェクトが見つかりません」
 
 **原因**：API キーにプロジェクトアクセス権限がない
@@ -202,8 +187,8 @@ npx @nulab/backlog-mcp-server
    echo $BACKLOG_API_KEY
    ```
 2. Backlog 設定で API キーを再生成
-3. 環境変数を更新
-4. BacklogMCP サーバーを再起動
+3. `.env` ファイルまたは環境変数を更新
+4. Claude Code セッションを再起動
 
 ### 問題：「プロジェクトコンテキストファイルが破損しています」
 
@@ -242,7 +227,7 @@ ls .claude/commands/bl/
 
 1. **コマンドを学ぶ**：[コマンドリファレンス](../README.ja.md#コマンドリファレンス)を読む
 2. **ワークフローを探る**：[ワークフローガイド](./workflows.ja.md)を参照
-3. **仕様を確認**：[SPECIFICATION.md](../SPECIFICATION.md)をチェック
+3. **コマンドを確認**：`.claude/commands/bl/`内のコマンドファイルを参照
 4. **カスタマイズ**：優先度アルゴリズムとテンプレートを調整
 
 ---

@@ -486,7 +486,7 @@ title,description,type,priority,assignee,estimatedHours
 
 - [コマンドリファレンス](../README.ja.md#コマンドリファレンス)で全コマンドを確認
 - [セットアップガイド](./setup.ja.md)で設定オプションを確認
-- [SPECIFICATION.md](../SPECIFICATION.md)で技術詳細を確認
+- `.claude/commands/bl/`内のコマンドファイルで実装詳細を確認
 
 ---
 

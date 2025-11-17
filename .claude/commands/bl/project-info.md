@@ -17,30 +17,45 @@ Display detailed information about the currently set working project.
 
 1. **Load Context**: Read `.claude/context/backlog-project.json`
 2. **Check Exists**: Verify project is set
-3. **Refresh (optional)**: If `--refresh`, fetch latest data via BacklogMCP
+3. **Refresh (optional)**: If `--refresh`, fetch latest data via Backlog API
 4. **Display**: Show project information
 5. **Verbose Details**: If `--verbose`, show extended metadata
 
 ## Implementation
 
-```python
-# Load current project context
-if not file_exists('.claude/context/backlog-project.json'):
-    error("No project set. Use /bl:project-set to set working project.")
-    return
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv } = require('../../../lib/utils');
+const fs = require('fs').promises;
 
-context = read_json('.claude/context/backlog-project.json')
+// Load current project context
+const contextPath = '.claude/context/backlog-project.json';
+let context;
+try {
+  const data = await fs.readFile(contextPath, 'utf8');
+  context = JSON.parse(data);
+} catch (error) {
+  console.error("❌ Error: No project set. Use /bl:project-set to set working project.");
+  return;
+}
 
-# Refresh if requested
-if get_flag('--refresh'):
-    fresh_data = call_mcp('backlog_get_project', projectIdOrKey=context['projectKey'])
-    # Update context with fresh data
-    context = update_context_with_fresh_data(context, fresh_data)
-    write_json('.claude/context/backlog-project.json', context)
-    print("🔄 Refreshed project data from Backlog")
+// Refresh if requested
+if (getFlag('--refresh')) {
+  const config = loadEnv();
+  const backlog = new BacklogAPIClient({
+    spaceKey: config.BACKLOG_SPACE_KEY,
+    apiKey: config.BACKLOG_API_KEY
+  });
 
-# Display information
-display_project_info(context, verbose=get_flag('--verbose'))
+  const freshData = await backlog.getProject(context.projectKey);
+  // Update context with fresh data
+  context = updateContextWithFreshData(context, freshData);
+  await fs.writeFile(contextPath, JSON.stringify(context, null, 2));
+  console.log("🔄 Refreshed project data from Backlog");
+}
+
+// Display information
+displayProjectInfo(context, { verbose: getFlag('--verbose') });
 ```
 
 ## Output Format

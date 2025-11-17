@@ -17,29 +17,41 @@ Display all Backlog projects accessible with current API credentials.
 
 ## Behavior
 
-1. **Fetch Projects**: Call BacklogMCP `get_project_list`
+1. **Fetch Projects**: Call Backlog API `/api/v2/projects`
 2. **Filter**: Apply `--active-only` filter if specified
 3. **Format**: Display in requested format
 4. **Usage Hint**: Show command hint for setting project
 
 ## Implementation
 
-```python
-# Fetch all projects
-projects = call_mcp('backlog_get_project_list')
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv } = require('../../../lib/utils');
 
-# Filter if requested
-if get_flag('--active-only'):
-    projects = [p for p in projects if not p.get('archived', False)]
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
 
-# Format output
-format_type = get_arg('--format', default='table')
+// Fetch all projects
+const projects = await backlog.getProjects();
 
-if format_type == 'json':
-    print(json.dumps(projects, indent=2))
-else:
-    display_projects_table(projects)
-    print("\n💡 Use /bl:project-set <key> to set working project")
+// Filter if requested
+const activeOnly = getFlag('--active-only');
+const filteredProjects = activeOnly
+  ? projects.filter(p => !p.archived)
+  : projects;
+
+// Format output
+const formatType = getArg('--format', { default: 'table' });
+
+if (formatType === 'json') {
+  console.log(JSON.stringify(filteredProjects, null, 2));
+} else {
+  displayProjectsTable(filteredProjects);
+  console.log("\n💡 Use /bl:project-set <key> to set working project");
+}
 ```
 
 ## Output Formats
@@ -89,10 +101,10 @@ Available Projects:
 📚 Documentation: Backlog API requires project access permissions
 ```
 
-**BacklogMCP unavailable**:
+**API connection error**:
 ```
-❌ Error: BacklogMCP server not available
-💡 Suggestion: Start BacklogMCP server
+❌ Error: Failed to connect to Backlog API
+💡 Suggestion: Check BACKLOG_SPACE_KEY and BACKLOG_API_KEY in .env
 📚 Documentation: See docs/setup.md
 ```
 
