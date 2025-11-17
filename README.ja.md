@@ -20,8 +20,16 @@ Backlog のプロジェクト管理ワークフローを Claude Code セッシ�
 ### 前提条件
 
 1. **Backlog アカウント** - API アクセス権限付き
-2. **BacklogMCP サーバー** - [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
-3. **Claude Code CLI** - [Anthropic's Claude Code](https://docs.claude.com/en/docs/claude-code)
+2. **Claude Code CLI** - [Anthropic's Claude Code](https://docs.claude.com/en/docs/claude-code)
+3. **Node.js** - バージョン14以上（Backlog APIクライアントの実行に必要）
+
+### MCPサーバー不要
+
+cc-backlog は **Backlog API への直接呼び出し** を使用しており、MCP サーバーは不要です：
+
+- ✅ **セットアップが簡単**: API キーだけで、サーバー設定不要
+- ✅ **信頼性向上**: Backlog API との直接通信
+- ✅ **パフォーマンス向上**: MCP サーバーのオーバーヘッドなし
 
 ### インストール
 
@@ -181,9 +189,9 @@ cp -r .claude-backlog/.claude .
 
 ## ドキュメント
 
-- [完全仕様書](./SPECIFICATION.md) - 詳細なコマンドリファレンスとデータ構造
 - [セットアップガイド](./docs/setup.ja.md) - インストールと設定
 - [ワークフローガイド](./docs/workflows.ja.md) - 一般的な PM ワークフロー
+- コマンドリファレンスは`.claude/commands/bl/`ディレクトリ内で参照可能
 
 ## プロジェクト構成
 
@@ -200,8 +208,13 @@ cc-backlog/
 │   │   ├── workflow-config.json
 │   │   └── ...
 │   └── templates/            # 課題テンプレート
+├── lib/                      # コアライブラリ (NEW)
+│   ├── backlog-api.js        # 直接Backlog APIクライアント
+│   ├── utils.js              # ユーティリティ関数
+│   └── cli-runner.js         # コマンド実行エンジン
 ├── docs/                     # ドキュメント
-├── SPECIFICATION.md          # 完全仕様書
+├── .env.example              # 環境変数設定テンプレート
+├── MIGRATION_GUIDE.md        # MCPからの移行ガイド
 └── README.md                 # このファイル
 ```
 
@@ -211,8 +224,9 @@ MIT License - 詳細は[LICENSE](./LICENSE)をご覧ください。
 
 ## 謝辞
 
-- [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)上に構築
+- [Backlog API](https://developer.nulab.com/ja/docs/backlog/)を利用
 - [Claude Code](https://docs.claude.com/en/docs/claude-code)で動作
+- 以前のバージョンでは [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server) を使用していました
 
 ## サポート
 

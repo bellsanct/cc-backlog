@@ -16,30 +16,40 @@ Mark an issue as "In Progress" and set as current working issue.
 
 ## Behavior
 
-1. **Fetch Issue**: Get issue details via BacklogMCP `get_issue`
+1. **Fetch Issue**: Get issue details via Backlog API `/api/v2/issues/:issueIdOrKey`
 2. **Validate Status**: Check if status transition is allowed
-3. **Update Status**: Change status to "In Progress" via BacklogMCP `update_issue`
+3. **Update Status**: Change status to "In Progress" via Backlog API PATCH `/api/v2/issues/:issueIdOrKey`
 4. **Assign**: Assign to current user if `--assignee-me`
-5. **Add Comment**: Add comment if `--comment` specified
+5. **Add Comment**: Add comment if `--comment` specified via POST `/api/v2/issues/:issueIdOrKey/comments`
 6. **Save Context**: Write to `.claude/context/current-issue.json`
 7. **Display**: Show start confirmation
 
 ## Implementation
 
-```python
-# Parse arguments
-issue_key = args[0] if args else error("Issue key required")
-comment_text = get_arg('--comment')
-assign_to_me = get_flag('--assignee-me')
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv } = require('../../../lib/utils');
 
-# Load project context
-project = load_project_context()
-if not project:
-    error("No project set")
-    return
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
 
-# Fetch issue
-issue = call_mcp('backlog_get_issue', issueIdOrKey=issue_key)
+// Parse arguments
+const issueKey = args[0] || error("Issue key required");
+const commentText = getArg('--comment');
+const assignToMe = getFlag('--assignee-me');
+
+// Load project context
+const project = loadProjectContext();
+if (!project) {
+  error("No project set");
+  return;
+}
+
+// Fetch issue
+const issue = await backlog.getIssue(issueKey);
 if not issue:
     error(f"Issue {issue_key} not found")
     return
@@ -70,14 +80,13 @@ if assign_to_me:
     current_user = call_mcp('backlog_get_myself')
     update_params['assigneeId'] = current_user['id']
 
-# Update issue
-updated_issue = call_mcp('backlog_update_issue', **update_params)
+// Update issue
+const updatedIssue = await backlog.updateIssue(issueKey, updateParams);
 
-# Add comment if provided
-if comment_text:
-    call_mcp('backlog_add_comment',
-             issueIdOrKey=issue_key,
-             content=comment_text)
+// Add comment if provided
+if (commentText) {
+  await backlog.addIssueComment(issueKey, { content: commentText });
+}
 
 # Save to current issue context
 current_issue_data = {

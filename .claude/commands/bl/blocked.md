@@ -201,15 +201,15 @@ done
 **API Error:**
 ```
 ❌ Error: Unable to fetch blocked issues
-💡 Check BacklogMCP connection and try again
+💡 Check Backlog API credentials and network connection
 ```
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_issue_list` with status filter for "Blocked"
-- Queries custom fields for blocker information
-- Fetches issue comments for additional context
+**Backlog API Integration:**
+- Uses GET `/api/v2/issues` with status filter for "Blocked"
+- Queries custom fields via GET `/api/v2/issues/:issueIdOrKey`
+- Fetches issue comments via GET `/api/v2/issues/:issueIdOrKey/comments`
 
 **Blocker Detection:**
 - Primary: Issues with status = "Blocked"

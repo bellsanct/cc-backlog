@@ -256,9 +256,9 @@ Issues are flagged as stale when:
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_issue_list` with status filter for "In Progress"
-- Fetches recent comments for progress detection
+**Backlog API Integration:**
+- Uses GET `/api/v2/issues` with status filter for "In Progress"
+- Fetches comments via GET `/api/v2/issues/:issueIdOrKey/comments`
 - Queries issue history for activity tracking
 
 **Progress Parsing:**

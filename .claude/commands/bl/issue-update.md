@@ -27,62 +27,78 @@ Update one or more properties of an existing Backlog issue.
 
 1. Collect specified update fields
 2. Resolve names to IDs (for status, priority, assignee, etc.)
-3. Call BacklogMCP `update_issue`
-4. Add comment if `--add-comment` specified
+3. Call Backlog API PATCH `/api/v2/issues/:issueIdOrKey`
+4. Add comment if `--add-comment` specified via POST `/api/v2/issues/:issueIdOrKey/comments`
 5. Update cache and current issue context if applicable
 6. Display updated fields
 
 ## Implementation
 
-```python
-issue_key = args[0]
-project = load_project_context()
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv, loadProjectContext } = require('../../../lib/utils');
 
-# Collect update fields
-updates = {}
-if has_arg('--title'):
-    updates['summary'] = get_arg('--title')
-if has_arg('--description'):
-    updates['description'] = get_arg('--description')
-if has_arg('--status'):
-    status_id = resolve_status(get_arg('--status'), project)
-    updates['statusId'] = status_id
-if has_arg('--priority'):
-    priority_id = resolve_priority(get_arg('--priority'), project)
-    updates['priorityId'] = priority_id
-if has_arg('--assignee'):
-    assignee_id = resolve_user(get_arg('--assignee'))
-    updates['assigneeId'] = assignee_id
-if has_arg('--milestone'):
-    milestone_id = resolve_version(get_arg('--milestone'), project)
-    updates['milestoneId'] = [milestone_id]
-if has_arg('--category'):
-    category_id = resolve_category(get_arg('--category'), project)
-    updates['categoryId'] = [category_id]
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
 
-# Update issue
-updated_issue = call_mcp('backlog_update_issue',
-                         issueIdOrKey=issue_key,
-                         **updates)
+const issueKey = args[0];
+const project = loadProjectContext();
 
-# Add comment if specified
-if has_arg('--add-comment'):
-    call_mcp('backlog_add_comment',
-             issueIdOrKey=issue_key,
-             content=get_arg('--add-comment'))
+// Collect update fields
+const updates = {};
+if (hasArg('--title')) {
+  updates.summary = getArg('--title');
+}
+if (hasArg('--description')) {
+  updates.description = getArg('--description');
+}
+if (hasArg('--status')) {
+  const statusId = await resolveStatus(getArg('--status'), project);
+  updates.statusId = statusId;
+}
+if (hasArg('--priority')) {
+  const priorityId = await resolvePriority(getArg('--priority'), project);
+  updates.priorityId = priorityId;
+}
+if (hasArg('--assignee')) {
+  const assigneeId = await resolveUser(getArg('--assignee'));
+  updates.assigneeId = assigneeId;
+}
+if (hasArg('--milestone')) {
+  const milestoneId = await resolveVersion(getArg('--milestone'), project);
+  updates.milestoneId = [milestoneId];
+}
+if (hasArg('--category')) {
+  const categoryId = await resolveCategory(getArg('--category'), project);
+  updates.categoryId = [categoryId];
+}
 
-# Display changes
-print(f"✅ Updated: {issue_key}")
-print("📊 Changes:")
-for field, value in updates.items():
-    print(f"  - {field}: {value}")
-print(f"🔗 {project['spaceUrl']}/view/{issue_key}")
+// Update issue
+const updatedIssue = await backlog.updateIssue(issueKey, updates);
 
-# Update cache
-update_issue_cache(updated_issue)
+// Add comment if specified
+if (hasArg('--add-comment')) {
+  await backlog.addComment(issueKey, {
+    content: getArg('--add-comment')
+  });
+}
 
-# Update current issue if it's the one being updated
-update_current_issue_if_match(issue_key, updated_issue)
+// Display changes
+console.log(`✅ Updated: ${issueKey}`);
+console.log("📊 Changes:");
+for (const [field, value] of Object.entries(updates)) {
+  console.log(`  - ${field}: ${value}`);
+}
+console.log(`🔗 ${project.spaceUrl}/view/${issueKey}`);
+
+// Update cache
+updateIssueCache(updatedIssue);
+
+// Update current issue if it's the one being updated
+updateCurrentIssueIfMatch(issueKey, updatedIssue);
 ```
 
 ## Example Usage

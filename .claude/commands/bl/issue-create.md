@@ -31,7 +31,7 @@ Create a single Backlog issue with interactive or command-line input.
 3. **Template Loading**: If `--template`, load template from `.claude/templates/`
 4. **Validation**: Validate required fields (title minimum)
 5. **ID Resolution**: Resolve assignee, milestone, category names to IDs
-6. **Create Issue**: Call BacklogMCP `add_issue`
+6. **Create Issue**: Call Backlog API POST `/api/v2/issues`
 7. **Display**: Show created issue details with URL
 
 ## Implementation
@@ -93,27 +93,39 @@ if issue_data.get('category'):
     issue_data['categoryId'] = category_id
 ```
 
-### Step 5: Create issue via BacklogMCP
-```python
-# Prepare BacklogMCP parameters
-mcp_params = {
-    'projectId': project['projectId'],
-    'summary': issue_data['title'],
-    'issueTypeId': issue_data.get('typeId'),
-    'priorityId': issue_data.get('priorityId'),
-    'description': issue_data.get('description', '')
+### Step 5: Create issue via Backlog API
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv } = require('../../../lib/utils');
+
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
+
+// Prepare API parameters
+const issueParams = {
+  projectId: project.projectId,
+  summary: issueData.title,
+  issueTypeId: issueData.typeId,
+  priorityId: issueData.priorityId,
+  description: issueData.description || ''
+};
+
+// Add optional fields
+if (issueData.assigneeId) {
+  issueParams.assigneeId = issueData.assigneeId;
+}
+if (issueData.milestoneId) {
+  issueParams.milestoneId = [issueData.milestoneId];
+}
+if (issueData.categoryId) {
+  issueParams.categoryId = [issueData.categoryId];
 }
 
-# Add optional fields
-if issue_data.get('assigneeId'):
-    mcp_params['assigneeId'] = issue_data['assigneeId']
-if issue_data.get('milestoneId'):
-    mcp_params['milestoneId'] = [issue_data['milestoneId']]
-if issue_data.get('categoryId'):
-    mcp_params['categoryId'] = [issue_data['categoryId']]
-
-# Call BacklogMCP
-created_issue = call_mcp('backlog_add_issue', **mcp_params)
+// Call Backlog API
+const createdIssue = await backlog.addIssue(issueParams);
 ```
 
 ### Step 6: Display result
@@ -223,7 +235,7 @@ The template will:
 ```
 ❌ Error: Failed to create issue
 💡 Suggestion: Check required fields and permissions
-🔗 BacklogMCP logs: [error details]
+🔗 API response: [error details]
 ```
 
 ## Example Usage

@@ -67,7 +67,7 @@ title,description,type,priority,assignee,category,milestone
 1. **Parse File**: Read and validate CSV or JSON file format
 2. **Validate Entries**: Check required fields and data types
 3. **Dry Run Check**: If `--dry-run`, display preview and exit without creating
-4. **Batch Processing**: Create issues in batches via BacklogMCP `add_issue`
+4. **Batch Processing**: Create issues in batches via Backlog API
 5. **Progress Display**: Show progress bar during creation
 6. **Summary Report**: Display success/failure counts and created issue keys
 
@@ -151,8 +151,8 @@ Failed issues:
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `add_issue` tool for issue creation
+**Backlog API Integration:**
+- Uses POST `/api/v2/issues` for issue creation
 - Validates project context from `backlog-project.json`
 - Handles API rate limiting with exponential backoff
 

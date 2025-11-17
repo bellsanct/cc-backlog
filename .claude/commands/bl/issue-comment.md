@@ -16,9 +16,9 @@ Add comments to Backlog issues with optional user notifications.
 
 ## Behavior
 
-1. **Validate Issue**: Verify issue exists in current project
+1. **Validate Issue**: Verify issue exists via GET `/api/v2/issues/:issueIdOrKey`
 2. **Format Comment**: Apply Markdown formatting and add user mentions if specified
-3. **Add Comment**: Call BacklogMCP `add_comment` to post comment
+3. **Add Comment**: Call Backlog API POST `/api/v2/issues/:issueIdOrKey/comments`
 4. **Notify Users**: Mention users with @username syntax if `--notify` provided
 5. **Display Confirmation**: Show comment confirmation with issue link
 
@@ -140,8 +140,8 @@ Comments support full Markdown formatting:
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `add_comment` tool to post comments
+**Backlog API Integration:**
+- Uses `POST /api/v2/issues/:issueIdOrKey/comments` to post comments
 - Automatically formats @mentions for user notifications
 - Preserves Markdown formatting in Backlog
 

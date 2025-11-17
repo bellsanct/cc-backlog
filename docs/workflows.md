@@ -486,7 +486,7 @@ Manage releases with milestones and version tracking.
 
 - Review [Command Reference](../README.md#command-reference) for all available commands
 - Check [Setup Guide](./setup.md) for configuration options
-- Read [SPECIFICATION.md](../SPECIFICATION.md) for technical details
+- Browse command files in `.claude/commands/bl/` for implementation details
 
 ---
 

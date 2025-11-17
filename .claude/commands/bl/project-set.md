@@ -15,12 +15,12 @@ Set the current working Backlog project for all subsequent commands.
 
 ## Behavior
 
-1. **Fetch Projects**: Call BacklogMCP `get_project_list` to retrieve all accessible projects
+1. **Fetch Projects**: Call Backlog API `/api/v2/projects` to retrieve all accessible projects
 2. **Match Project**:
    - Exact match on project key (case-insensitive)
    - If no exact match, fuzzy match on project name
    - If multiple matches, present interactive selection
-3. **Fetch Metadata**: Call BacklogMCP `get_project` to get detailed project information
+3. **Fetch Metadata**: Call Backlog API `/api/v2/projects/:projectIdOrKey` to get detailed project information
 4. **Save Context**: Write to `.claude/context/backlog-project.json`:
    ```json
    {
@@ -46,89 +46,117 @@ Set the current working Backlog project for all subsequent commands.
 
 ## Implementation
 
-### Step 1: Check if BacklogMCP is available
-```python
-# Check if BacklogMCP tools are accessible
-if not mcp_available('backlog_get_project_list'):
-    error("BacklogMCP server not available. Please check configuration.")
-    return
+### Step 1: Initialize Backlog API client
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv } = require('../../../lib/utils');
+
+// Load environment variables from .env
+const config = loadEnv();
+
+// Initialize API client
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
 ```
 
 ### Step 2: Fetch project list
-```python
-# Call BacklogMCP to get all projects
-projects = call_mcp('backlog_get_project_list')
+```javascript
+// Call Backlog API to get all projects
+const projects = await backlog.getProjects();
 
-# Parse arguments
-project_input = args[0] if args else prompt("Enter project key or name: ")
-space_key = get_arg('--space', optional=True)
+// Parse arguments
+const projectInput = args[0] || prompt("Enter project key or name: ");
+const spaceKey = getArg('--space', { optional: true });
 ```
 
 ### Step 3: Match project
-```python
-# Try exact key match first
-matched = [p for p in projects if p['projectKey'].upper() == project_input.upper()]
+```javascript
+// Try exact key match first
+let matched = projects.filter(p =>
+  p.projectKey.toUpperCase() === projectInput.toUpperCase()
+);
 
-if not matched:
-    # Try fuzzy name match
-    matched = [p for p in projects if project_input.lower() in p['name'].lower()]
+if (matched.length === 0) {
+  // Try fuzzy name match
+  matched = projects.filter(p =>
+    p.name.toLowerCase().includes(projectInput.toLowerCase())
+  );
+}
 
-if len(matched) == 0:
-    error(f"No project found matching '{project_input}'")
-    # Show available projects
-    display_projects(projects)
-    return
-elif len(matched) > 1:
-    # Interactive selection
-    selected = prompt_selection("Multiple projects found:", matched)
-    matched = [selected]
+if (matched.length === 0) {
+  console.error(`❌ No project found matching '${projectInput}'`);
+  displayProjects(projects);
+  return;
+} else if (matched.length > 1) {
+  // Interactive selection
+  const selected = await promptSelection("Multiple projects found:", matched);
+  matched = [selected];
+}
 
-project = matched[0]
+const project = matched[0];
 ```
 
 ### Step 4: Fetch detailed metadata
-```python
-# Get full project details
-project_detail = call_mcp('backlog_get_project', projectIdOrKey=project['projectKey'])
+```javascript
+// Get full project details
+const projectDetail = await backlog.getProject(project.projectKey);
 
-# Enrich with metadata
-metadata = {
-    'issueCount': calculate_issue_counts(project_detail),
-    'memberCount': len(project_detail.get('users', [])),
-    'categories': project_detail.get('issueTypes', []),
-    'versions': project_detail.get('versions', []),
-    'issueTypes': project_detail.get('issueTypes', []),
-    'statuses': project_detail.get('statuses', []),
-    'priorities': project_detail.get('priorities', [])
-}
+// Fetch additional metadata
+const [issueTypes, statuses, priorities, categories, versions] = await Promise.all([
+  backlog.getIssueTypes(project.id),
+  backlog.getStatuses(project.id),
+  backlog.getPriorities(),
+  backlog.getCategories(project.id),
+  backlog.getVersions(project.id)
+]);
+
+// Count issues by status
+const issueCount = await backlog.getIssueCount(project.id);
+
+// Enrich with metadata
+const metadata = {
+  issueCount: issueCount,
+  memberCount: projectDetail.users?.length || 0,
+  categories: categories,
+  versions: versions,
+  issueTypes: issueTypes,
+  statuses: statuses,
+  priorities: priorities
+};
 ```
 
 ### Step 5: Save context
-```python
-# Prepare context object
-context = {
-    'projectId': project_detail['id'],
-    'projectKey': project_detail['projectKey'],
-    'projectName': project_detail['name'],
-    'spaceKey': space_key or extract_space_from_url(project_detail),
-    'spaceUrl': construct_space_url(project_detail),
-    'setAt': now_iso8601(),
-    'metadata': metadata,
-    'lastSync': now_iso8601()
-}
+```javascript
+// Prepare context object
+const context = {
+  projectId: projectDetail.id,
+  projectKey: projectDetail.projectKey,
+  projectName: projectDetail.name,
+  spaceKey: spaceKey || config.BACKLOG_SPACE_KEY,
+  spaceUrl: `https://${spaceKey || config.BACKLOG_SPACE_KEY}.backlog.com`,
+  setAt: new Date().toISOString(),
+  metadata: metadata,
+  lastSync: new Date().toISOString()
+};
 
-# Write to file
-write_json('.claude/context/backlog-project.json', context)
+// Write to file
+const fs = require('fs').promises;
+await fs.writeFile(
+  '.claude/context/backlog-project.json',
+  JSON.stringify(context, null, 2)
+);
 ```
 
 ### Step 6: Display output
-```python
-print(f"""
-✅ Project set: {context['projectKey']} - {context['projectName']}
-📊 Issues: {metadata['issueCount']['open']} open, {metadata['issueCount']['closed']} closed
-👥 Members: {metadata['memberCount']}
+```javascript
+console.log(`
+✅ Project set: ${context.projectKey} - ${context.projectName}
+📊 Issues: ${metadata.issueCount.open} open, ${metadata.issueCount.closed} closed
+👥 Members: ${metadata.memberCount}
 📍 Context saved to .claude/context/backlog-project.json
-""")
+`);
 ```
 
 ## Error Handling
@@ -136,8 +164,8 @@ print(f"""
 **No projects accessible**:
 ```
 ❌ Error: No Backlog projects found
-💡 Suggestion: Check your API key permissions
-📚 Documentation: See docs/setup.md for BacklogMCP configuration
+💡 Suggestion: Check your API key permissions and BACKLOG_API_KEY in .env
+📚 Documentation: See docs/setup.md for configuration
 ```
 
 **Project not found**:
@@ -152,8 +180,8 @@ Use /bl:project-list to see all projects
 **API error**:
 ```
 ❌ Error: Failed to fetch project details
-💡 Suggestion: Check BacklogMCP server status and API key
-🔗 BacklogMCP logs: Check MCP server output
+💡 Suggestion: Verify BACKLOG_SPACE_KEY and BACKLOG_API_KEY in .env
+🔗 API endpoint: https://<your-space>.backlog.com/api/v2
 ```
 
 ## Example Usage

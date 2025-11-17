@@ -27,30 +27,24 @@ Complete setup guide for installing and configuring cc-backlog.
    - Generate from Backlog: Personal Settings → API → Generate
    - Keep this secure and never commit to version control
 
-3. **Claude Code CLI**
+3. **Node.js**
+
+   - Version 14 or higher
+   - Required for running the Backlog API client
+
+4. **Claude Code CLI**
 
    - Anthropic's Claude Code installed
    - Version: Latest recommended
    - Documentation: https://docs.claude.com/en/docs/claude-code
-   - **Note**: This is different from Claude Desktop app
 
-4. **BacklogMCP Server** (configured for Claude Code)
-   - [nulab/backlog-mcp-server](https://github.com/nulab/backlog-mcp-server)
-   - Must be configured in Claude Code's MCP settings
-   - If you're using Claude Desktop: BacklogMCP configuration is separate and won't work with Claude Code
+### No MCP Server Required
 
-### For Claude Desktop Users
+cc-backlog now uses **direct Backlog API calls** without needing an MCP server:
 
-If you're already using BacklogMCP with Claude Desktop:
-
-- **Claude Desktop ≠ Claude Code**: These are different applications
-- **Separate MCP configurations**: Your Claude Desktop MCP setup won't be available in Claude Code
-- **You need both**: Install and configure BacklogMCP separately for Claude Code
-- **Configuration location**:
-  - Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
-  - Claude Code: `.claude.json`
-
-See BacklogMCP documentation for Claude Code MCP configuration: https://github.com/nulab/backlog-mcp-server
+- ✅ **Simpler setup**: Just API keys, no server configuration
+- ✅ **Better reliability**: Direct communication with Backlog API
+- ✅ **Faster performance**: No MCP server overhead
 
 ---
 
@@ -98,17 +92,25 @@ your-project/
 
 ## Verification
 
-### Prerequisites Check
+### Environment Setup
 
-Before testing cc-backlog commands, ensure BacklogMCP server is running and configured:
+Before testing cc-backlog commands, ensure environment variables are set:
 
 ```bash
-# Check if BacklogMCP server is accessible
-# (Refer to BacklogMCP documentation for setup)
-
 # Verify environment variables are set
 echo $BACKLOG_API_KEY
 echo $BACKLOG_SPACE_KEY
+```
+
+If not set, create a `.env` file in your project root:
+
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit with your credentials
+# BACKLOG_SPACE_KEY=your-space
+# BACKLOG_API_KEY=your-api-key
 ```
 
 ### Test Installation
@@ -117,11 +119,11 @@ echo $BACKLOG_SPACE_KEY
 # Start Claude Code in your project directory
 cd your-project
 
-# Test 1: List projects (requires BacklogMCP configuration)
+# Test 1: List projects
 /bl:project-list
 
 # Expected: Table of accessible Backlog projects
-# If error: Check BacklogMCP server status and API credentials
+# If error: Check API credentials and Backlog API access
 
 # Test 2: Set project
 /bl:project-set YOUR_PROJECT_NAME
@@ -158,24 +160,6 @@ ls -la .claude/context/
 
 ## Troubleshooting
 
-### Issue: "BacklogMCP server not available"
-
-**Cause**: BacklogMCP server not running or not accessible
-
-**Solution**:
-
-```bash
-# Check if server is running
-docker ps | grep backlog-mcp
-# or
-curl http://localhost:3000/health
-
-# Restart server
-docker restart backlog-mcp
-# or
-npx @nulab/backlog-mcp-server
-```
-
 ### Issue: "No projects found"
 
 **Cause**: API key lacks project access permissions
@@ -202,8 +186,8 @@ npx @nulab/backlog-mcp-server
    echo $BACKLOG_API_KEY
    ```
 2. Regenerate API key in Backlog settings
-3. Update environment variable
-4. Restart BacklogMCP server
+3. Update `.env` file or environment variable
+4. Restart Claude Code session
 
 ### Issue: "Project context file corrupted"
 
@@ -242,7 +226,7 @@ ls .claude/commands/bl/
 
 1. **Learn Commands**: Read [Command Reference](../README.md#command-reference)
 2. **Explore Workflows**: See [Workflow Guide](./workflows.md)
-3. **Review Specification**: Check [SPECIFICATION.md](../SPECIFICATION.md)
+3. **Review Commands**: Browse command files in `.claude/commands/bl/`
 4. **Customize**: Adjust priority algorithm and templates
 
 ---

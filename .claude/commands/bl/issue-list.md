@@ -27,70 +27,87 @@ Display issues from the current project with optional filtering and sorting.
 ## Behavior
 
 1. Build filter query from arguments
-2. Call BacklogMCP `get_issues` with filters
+2. Call Backlog API GET `/api/v2/issues` with filters
 3. Sort results
 4. Format and display
 
 ## Implementation
 
-```python
-project = load_project_context()
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv, loadProjectContext } = require('../../../lib/utils');
 
-# Build filter parameters
-filters = {
-    'projectId[]': [project['projectId']]
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
+
+const project = loadProjectContext();
+
+// Build filter parameters
+const filters = {
+  projectId: [project.projectId]
+};
+
+if (hasArg('--status')) {
+  const statusId = await resolveStatus(getArg('--status'), project);
+  filters.statusId = [statusId];
 }
 
-if has_arg('--status'):
-    status_id = resolve_status(get_arg('--status'), project)
-    filters['statusId[]'] = [status_id]
+if (hasArg('--type')) {
+  const typeId = await resolveIssueType(getArg('--type'), project);
+  filters.issueTypeId = [typeId];
+}
 
-if has_arg('--type'):
-    type_id = resolve_issue_type(get_arg('--type'), project)
-    filters['issueTypeId[]'] = [type_id]
+if (hasArg('--assignee')) {
+  const assigneeArg = getArg('--assignee');
+  if (assigneeArg === 'me') {
+    const currentUser = await backlog.getMyself();
+    filters.assigneeId = [currentUser.id];
+  } else {
+    const assigneeId = await resolveUser(assigneeArg);
+    filters.assigneeId = [assigneeId];
+  }
+}
 
-if has_arg('--assignee'):
-    assignee_arg = get_arg('--assignee')
-    if assignee_arg == 'me':
-        current_user = call_mcp('backlog_get_myself')
-        filters['assigneeId[]'] = [current_user['id']]
-    else:
-        assignee_id = resolve_user(assignee_arg)
-        filters['assigneeId[]'] = [assignee_id]
+if (hasArg('--milestone')) {
+  const milestoneId = await resolveVersion(getArg('--milestone'), project);
+  filters.milestoneId = [milestoneId];
+}
 
-if has_arg('--milestone'):
-    milestone_id = resolve_version(get_arg('--milestone'), project)
-    filters['milestoneId[]'] = [milestone_id]
+if (hasArg('--priority')) {
+  const priorityId = await resolvePriority(getArg('--priority'), project);
+  filters.priorityId = [priorityId];
+}
 
-if has_arg('--priority'):
-    priority_id = resolve_priority(get_arg('--priority'), project)
-    filters['priorityId[]'] = [priority_id]
+if (hasArg('--category')) {
+  const categoryId = await resolveCategory(getArg('--category'), project);
+  filters.categoryId = [categoryId];
+}
 
-if has_arg('--category'):
-    category_id = resolve_category(get_arg('--category'), project)
-    filters['categoryId[]'] = [category_id]
+// Get issues
+const issues = await backlog.getIssues(filters);
 
-# Get issues
-issues = call_mcp('backlog_get_issues', **filters)
+// Sort
+const sortField = getArg('--sort', 'updated');
+const sortedIssues = sortIssues(issues, sortField);
 
-# Sort
-sort_field = get_arg('--sort', default='updated')
-issues = sort_issues(issues, sort_field)
+// Limit
+const limit = parseInt(getArg('--limit', '20'));
+const limitedIssues = sortedIssues.slice(0, limit);
 
-# Limit
-limit = get_arg('--limit', default=20, type=int)
-issues = issues[:limit]
+// Format and display
+const formatType = getArg('--format', 'table');
 
-# Format and display
-format_type = get_arg('--format', default='table')
-
-if format_type == 'json':
-    print(json.dumps(issues, indent=2))
-elif format_type == 'compact':
-    display_compact(issues)
-else:
-    display_table(issues)
-    print(f"\n💡 Use /bl:issue-start <key> to start working on an issue")
+if (formatType === 'json') {
+  console.log(JSON.stringify(limitedIssues, null, 2));
+} else if (formatType === 'compact') {
+  displayCompact(limitedIssues);
+} else {
+  displayTable(limitedIssues);
+  console.log(`\n💡 Use /bl:issue-start <key> to start working on an issue`);
+}
 ```
 
 ## Output Formats

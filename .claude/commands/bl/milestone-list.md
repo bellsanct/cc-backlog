@@ -21,9 +21,9 @@ Display all milestones (versions) in the current project with status and progres
 
 ## Behavior
 
-1. **Fetch Milestones**: Call BacklogMCP `get_versions` for current project
+1. **Fetch Milestones**: Call Backlog API GET `/api/v2/projects/:projectIdOrKey/versions`
 2. **Filter by Status**: Apply status filter if specified
-3. **Calculate Progress**: Fetch issue counts per milestone
+3. **Calculate Progress**: Fetch issue counts per milestone via GET `/api/v2/issues`
 4. **Format Output**: Display in requested format
 5. **Sort**: Order by due date (upcoming first), then by name
 
@@ -223,14 +223,14 @@ milestones=$(/bl:milestone-list --format simple)
 ```
 ❌ Error: Unable to fetch milestones
    Reason: Connection timeout
-💡 Check BacklogMCP connection and try again
+💡 Check Backlog API credentials and network connection
 ```
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_versions` tool to fetch all milestones
-- Fetches issue counts per milestone via `get_issue_list`
+**Backlog API Integration:**
+- Uses GET `/api/v2/projects/:projectIdOrKey/versions` to fetch all milestones
+- Fetches issue counts per milestone via GET `/api/v2/issues`
 - Calculates progress based on issue status distribution
 
 **Progress Calculation:**

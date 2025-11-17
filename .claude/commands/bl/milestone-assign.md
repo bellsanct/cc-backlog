@@ -19,7 +19,7 @@ Assign or update milestone/version for one or multiple issues.
 
 1. **Resolve Milestone**: Find milestone ID by name from project milestones
 2. **Validate Issues**: Verify all issue keys exist in current project
-3. **Batch Update**: Update milestone for each issue via BacklogMCP `update_issue`
+3. **Batch Update**: Update milestone for each issue via PATCH `/api/v2/issues/:issueIdOrKey`
 4. **Display Summary**: Show success/failure counts and updated issue list
 
 ## Examples
@@ -258,9 +258,9 @@ Use /bl:milestone-list to see all milestones
 
 ## Implementation Notes
 
-**BacklogMCP Integration:**
-- Uses `get_versions` to resolve milestone name to ID
-- Uses `update_issue` to assign milestone to each issue
+**Backlog API Integration:**
+- Uses GET `/api/v2/projects/:projectIdOrKey/versions` to resolve milestone name to ID
+- Uses PATCH `/api/v2/issues/:issueIdOrKey` to assign milestone to each issue
 - Batch processing for multiple issue updates
 
 **Milestone Resolution:**

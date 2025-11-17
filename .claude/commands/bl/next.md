@@ -44,56 +44,71 @@ Configuration is loaded from `.claude/context/workflow-config.json`.
 
 ## Implementation
 
-```python
-project = load_project_context()
+```javascript
+const { BacklogAPIClient } = require('../../../lib/backlog-api');
+const { loadEnv, loadProjectContext } = require('../../../lib/utils');
 
-# Parse arguments
-assignee_arg = get_arg('--assignee', default='me')
-type_filter = get_arg('--type')
-count = get_arg('--count', default=3, type=int)
+const config = loadEnv();
+const backlog = new BacklogAPIClient({
+  spaceKey: config.BACKLOG_SPACE_KEY,
+  apiKey: config.BACKLOG_API_KEY
+});
 
-# Resolve assignee
-if assignee_arg == 'me':
-    current_user = call_mcp('backlog_get_myself')
-    assignee_id = current_user['id']
-else:
-    assignee_id = resolve_user(assignee_arg)
+const project = loadProjectContext();
 
-# Build filter
-filters = {
-    'projectId[]': [project['projectId']],
-    'assigneeId[]': [assignee_id],
-    'statusId[]': get_open_status_ids(project)
+// Parse arguments
+const assigneeArg = getArg('--assignee', 'me');
+const typeFilter = getArg('--type');
+const count = parseInt(getArg('--count', '3'));
+
+// Resolve assignee
+let assigneeId;
+if (assigneeArg === 'me') {
+  const currentUser = await backlog.getMyself();
+  assigneeId = currentUser.id;
+} else {
+  assigneeId = await resolveUser(assigneeArg);
 }
 
-if type_filter:
-    type_id = resolve_issue_type(type_filter, project)
-    filters['issueTypeId[]'] = [type_id]
+// Build filter
+const filters = {
+  projectId: [project.projectId],
+  assigneeId: [assigneeId],
+  statusId: getOpenStatusIds(project)
+};
 
-# Fetch issues
-issues = call_mcp('backlog_get_issues', **filters)
+if (typeFilter) {
+  const typeId = await resolveIssueType(typeFilter, project);
+  filters.issueTypeId = [typeId];
+}
 
-# Load workflow config
-config = load_workflow_config()
+// Fetch issues
+const issues = await backlog.getIssues(filters);
 
-# Calculate scores
-scored_issues = []
-for issue in issues:
-    score = calculate_priority_score(issue, config)
-    scored_issues.append((score, issue))
+// Load workflow config
+const workflowConfig = loadWorkflowConfig();
 
-# Sort by score descending
-scored_issues.sort(key=lambda x: x[0], reverse=True)
+// Calculate scores
+const scoredIssues = [];
+for (const issue of issues) {
+  const score = calculatePriorityScore(issue, workflowConfig);
+  scoredIssues.push({ score, issue });
+}
 
-# Take top N
-recommendations = scored_issues[:count]
+// Sort by score descending
+scoredIssues.sort((a, b) => b.score - a.score);
 
-# Display
-print(f"🎯 Recommended next tasks (by priority):\n")
-for i, (score, issue) in enumerate(recommendations, 1):
-    display_recommendation(i, score, issue, project)
+// Take top N
+const recommendations = scoredIssues.slice(0, count);
 
-print("\nUse /bl:issue-start <key> to begin work")
+// Display
+console.log('🎯 Recommended next tasks (by priority):\n');
+for (let i = 0; i < recommendations.length; i++) {
+  const { score, issue } = recommendations[i];
+  displayRecommendation(i + 1, score, issue, project);
+}
+
+console.log('\nUse /bl:issue-start <key> to begin work');
 ```
 
 ## Scoring Functions
